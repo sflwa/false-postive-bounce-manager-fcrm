@@ -2,13 +2,14 @@
 if (!defined('ABSPATH')) exit;
 
 add_action('admin_menu', function() {
-    add_submenu_page(
-        'fluentcrm-menu',
-        'Bounce Manager',
-        'Bounce Manager',
-        'manage_options',
-        'fpbmfcrm-manager',
-        'fpbmfcrm_render_admin_page'
+    add_menu_page(
+        'Bounce Manager',           // Page Title
+        'Bounce Manager',           // Menu Title
+        'manage_options',           // Capability
+        'fpbmfcrm-manager',         // Menu Slug
+        'fpbmfcrm_render_admin_page', // Function
+        'dashicons-email-alt',      // Icon (Email icon)
+        58                          // Position (Just below FluentCRM)
     );
 });
 
