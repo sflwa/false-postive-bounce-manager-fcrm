@@ -3,13 +3,13 @@ if (!defined('ABSPATH')) exit;
 
 add_action('admin_menu', function() {
     add_menu_page(
-        'Bounce Manager',           // Page Title
-        'Bounce Manager',           // Menu Title
-        'manage_options',           // Capability
-        'fpbmfcrm-manager',         // Menu Slug
-        'fpbmfcrm_render_admin_page', // Function
-        'dashicons-email-alt',      // Icon (Email icon)
-        58                          // Position (Just below FluentCRM)
+        'Bounce Manager',
+        'Bounce Manager',
+        'manage_options',
+        'fpbmfcrm-manager',
+        'fpbmfcrm_render_admin_page',
+        'dashicons-email-alt',
+        58
     );
 });
 
@@ -37,7 +37,6 @@ function fpbmfcrm_render_admin_page() {
         }
     }
 
-    // Handle Bulk Clear
     if (isset($_POST['fpbmfcrm_clear_logs'])) {
         check_admin_referer('fpbmfcrm_bulk');
         $wpdb->query("TRUNCATE TABLE $log_table");
@@ -49,9 +48,13 @@ function fpbmfcrm_render_admin_page() {
 
     <div class="wrap">
         <h1>False Positive Bounce Manager</h1>
-        <p>Review "Undetermined" or "Transient" bounces and move them to the Protection List.</p>
-
-        <hr />
+        
+        <div style="background: #fff; border-left: 4px solid #72aee6; padding: 12px; margin-bottom: 20px;">
+            <strong>Debug Status:</strong> <?php echo (defined('FPBMFCRM_DEBUG') && FPBMFCRM_DEBUG) ? '<span style="color:red;">ENABLED</span>' : 'OFF'; ?> 
+            <?php if (file_exists(FPBMFCRM_PATH . 'debug.log')): ?>
+                | <a href="<?php echo plugins_url('debug.log', FPBMFCRM_PATH . 'false-postive-bounce-manager-fcrm.php'); ?>" target="_blank">View Debug Log File</a>
+            <?php endif; ?>
+        </div>
 
         <h2>Pending Review (Current Bounces)</h2>
         <form method="post">
@@ -59,10 +62,10 @@ function fpbmfcrm_render_admin_page() {
             <table class="wp-list-table widefat fixed striped">
                 <thead>
                     <tr>
-                        <th width="20%">Date</th>
-                        <th width="35%">Email</th>
-                        <th width="15%">Type</th>
-                        <th width="30%">Actions</th>
+                        <th width="15%">Date</th>
+                        <th width="30%">Email</th>
+                        <th width="20%">Type</th>
+                        <th width="35%">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -74,6 +77,11 @@ function fpbmfcrm_render_admin_page() {
                         <td>
                             <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=fpbmfcrm-manager&action=approve&email=' . $log->email), 'fpbmfcrm_action_' . $log->email); ?>" class="button button-primary">Approve & Resubscribe</a>
                             <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=fpbmfcrm-manager&action=delete_log&email=' . $log->email), 'fpbmfcrm_action_' . $log->email); ?>" class="button">Dismiss</a>
+                            <button type="button" class="button" onclick="document.getElementById('details-<?php echo $log->id; ?>').style.display = (document.getElementById('details-<?php echo $log->id; ?>').style.display == 'none') ? 'block' : 'none';">JSON</button>
+                            
+                            <div id="details-<?php echo $log->id; ?>" style="display:none; margin-top:10px; background:#f0f0f0; padding:10px; border:1px solid #ccc; font-family:monospace; font-size:11px; white-space: pre-wrap; word-break: break-all;">
+                                <?php echo esc_html(json_encode(json_decode($log->raw_payload), JSON_PRETTY_PRINT)); ?>
+                            </div>
                         </td>
                     </tr>
                     <?php endforeach; else: ?>
@@ -84,10 +92,9 @@ function fpbmfcrm_render_admin_page() {
             <p><input type="submit" name="fpbmfcrm_clear_logs" class="button" value="Clear All Logs" onclick="return confirm('Delete all review logs?');"></p>
         </form>
 
-        <br />
+        <br /><hr /><br />
 
         <h2>Protected Allow List</h2>
-        <p><small>Emails below will never be marked as "Bounced" by the SNS handler.</small></p>
         <table class="wp-list-table widefat fixed striped">
             <thead>
                 <tr>
