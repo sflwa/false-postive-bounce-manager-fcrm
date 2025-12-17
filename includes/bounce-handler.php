@@ -9,23 +9,31 @@ add_filter('fluent_crm/ses_bounce_data', function($data) {
     $type = $bounce['bounceType'] ?? 'Unknown';
 
     foreach ($recipients as $recipient) {
-        $email = sanitize_email($recipient['emailAddress'] ?? '');
-        if (!$email) continue;
+        $raw_email = $recipient['emailAddress'] ?? '';
+        
+        // Use Regex to extract email from "Name <email@domain.com>" format
+        $clean_email = '';
+        if (preg_match('/<([^>]+)>/', $raw_email, $matches)) {
+            $clean_email = sanitize_email($matches[1]);
+        } else {
+            $clean_email = sanitize_email($raw_email);
+        }
 
-        // 1. Check if email is on the Protection/Allow List
+        if (!$clean_email) continue;
+
+        // 1. Check Allow List
         $is_protected = $wpdb->get_var($wpdb->prepare(
             "SELECT id FROM {$wpdb->prefix}" . FPBMFCRM_DB_ALLOW . " WHERE email = %s", 
-            $email
+            $clean_email
         ));
 
         if ($is_protected) {
-            // STOP: Return false so FluentCRM does not mark them as bounced
             return false; 
         }
 
-        // 2. If not protected, log it for review (FluentCRM will proceed to mark as Bounced)
+        // 2. Log for Review
         $wpdb->insert($wpdb->prefix . FPBMFCRM_DB_LOGS, [
-            'email'       => $email,
+            'email'       => $clean_email,
             'bounce_type' => $type,
             'raw_payload' => json_encode($data)
         ]);
