@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: False Positive Bounce Manager for FluentCRM
- * Version: 1.3
+ * Version: 1.4
  */
 
 if (!defined('ABSPATH')) exit;
@@ -9,7 +9,7 @@ if (!defined('ABSPATH')) exit;
 define('FPBMFCRM_PATH', plugin_dir_path(__FILE__));
 define('FPBMFCRM_DB_LOGS', 'fpbmfcrm_bounce_logs');
 define('FPBMFCRM_DB_ALLOW', 'fpbmfcrm_allow_list');
-define('FPBMFCRM_DEBUG', true); // SET TO FALSE TO TURN OFF LOGGING
+define('FPBMFCRM_DEBUG', false); // SET TO FALSE TO TURN OFF LOGGING
 
 require_once FPBMFCRM_PATH . 'includes/database.php';
 require_once FPBMFCRM_PATH . 'includes/bounce-handler.php';
